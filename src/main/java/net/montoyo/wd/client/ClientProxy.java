@@ -570,18 +570,18 @@ public class ClientProxy extends SharedProxy implements ResourceManagerReloadLis
 	public void onLevelTick(TickEvent.LevelTickEvent ev) {
 		if (!ev.side.equals(LogicalSide.CLIENT)) return;
 		if (ev.phase != TickEvent.Phase.END) return;
-		
+
 		//Unload/load screens depending on client player distance
 		if (mc.player == null || screenTracking.isEmpty())
 			return;
-		
+
 		int id = lastTracked % screenTracking.size();
-		
+
 		ScreenBlockEntity tes = screenTracking.get(id);
-		
+
 		if (!tes.getLevel().equals(ev.level))
 			return;
-		
+
 		lastTracked++;
 		if (tes.getLevel() != mc.player.level()) {
 			// TODO: properly handle this
@@ -592,23 +592,20 @@ public class ClientProxy extends SharedProxy implements ResourceManagerReloadLis
 			Camera camera = mc.getEntityRenderDispatcher().camera;
 			Entity entity = null;
 
-			// ide inspection says this is a bunch of constant expressions
-			// THIS IS NOT THE CASE
-			// a crash HAS occurred because of this going unchecked, and I'm confused about it
+			if (camera != null) {
+				entity = camera.getEntity();
+			}
 
-			//noinspection ConstantValue
-			if (camera != null) entity = camera.getEntity();
-			//noinspection ConstantValue
-			if (entity == null) entity = mc.player;
-			//noinspection ConstantValue
+			if (entity == null) {
+				entity = mc.player;
+			}
+
 			if (entity != null) {
 				double dist = distanceTo(tes, entity.getPosition(0));
 
 				if (tes.isLoaded()) {
 					if (dist > WebDisplays.INSTANCE.unloadDistance2 * 16)
 						tes.deactivate();
-//					else if (ClientConfig.AutoVolumeControl.enableAutoVolume)
-//						tes.updateTrackDistance(dist, 80); //ToDo find master volume
 				} else if (dist <= WebDisplays.INSTANCE.loadDistance2 * 16)
 					tes.activate();
 			}
